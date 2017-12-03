@@ -40,7 +40,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\"",
-    "build": "rm -rf ./dist && tsc",
+    "build": "rm -rf ./lib && tsc",
     "prepublish": "tsc",
     "setup": "semantic-release-cli setup",
     "commit": "git cz",
@@ -48,7 +48,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/NetanelBasal/ngx-easy-test"
+    "url": "https://github.com/valburyakov/ngx-easy-test"
   },
   "license": "MIT"
 }

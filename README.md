@@ -52,47 +52,56 @@ export class ZippyComponent {
 ```ts
 // zippy.component.spec.ts
 
-import { createHost, EasyTestWithHost } from 'ngx-easy-test';
+import { makeCreateHostComponent, EasyTestWithHost } from 'ngx-easy-test';
 
 describe('ZippyComponent', () => {
-  type Context = EasyTestWithHost<ZippyComponent>;
+  let host: EasyTestWithHost<ZippyComponent>;
+  
+  const createHost = makeCreateHostComponent<ZippyComponent>(ZippyComponent);
 
-  createHost(ZippyComponent);
-
-  it('should display the title', function ( this : Context ) {
-    this.create(`<zippy title="Zippy title"></zippy>`);
-    expect(this.query('.zippy__title')).toContainText('Zippy title');
+  it('should display the title', () => {
+    host = createHost(`<zippy title="Zippy title"></zippy>`);
+    
+    expect(host.query('.zippy__title')).toContainText('Zippy title');
   });
 
-  it('should display the content', function ( this : Context ) {
-    this.create(`<zippy title="Zippy title">Zippy content</zippy>`);
-    this.trigger('click', '.zippy__title');
-    expect(this.query('.zippy__content')).toContainText('Zippy content');
+  it('should display the content', () => {
+    host = createHost(`<zippy title="Zippy title">Zippy content</zippy>`);
+    
+    host.trigger('click', '.zippy__title');
+    
+    expect(host.query('.zippy__content')).toContainText('Zippy content');
   });
 
-  it('should display the "Open" word if closed', function ( this : Context ) {
-    this.create(`<zippy title="Zippy title">Zippy content</zippy>`);
-    expect(this.query('.arrow')).toContainText('Open');
-    expect(this.query('.arrow')).not.toContainText('Close');
+  it('should display the "Open" word if closed', () => {
+    host = createHost(`<zippy title="Zippy title">Zippy content</zippy>`);
+    
+    expect(host.query('.arrow')).toContainText('Open');
+    expect(host.query('.arrow')).not.toContainText('Close');
   });
 
-  it('should display the "Close" word if open', function ( this : Context ) {
-    this.create(`<zippy title="Zippy title">Zippy content</zippy>`);
-    this.trigger('click', '.zippy__title');
-    expect(this.query('.arrow')).toContainText('Close');
-    expect(this.query('.arrow')).not.toContainText('Open');
+  it('should display the "Close" word if open', () {
+    host = createHost(`<zippy title="Zippy title">Zippy content</zippy>`);
+    
+    host.trigger('click', '.zippy__title');
+    
+    expect(host.query('.arrow')).toContainText('Close');
+    expect(host.query('.arrow')).not.toContainText('Open');
   });
 
-  it('should be closed by default', function ( this : Context ) {
-    this.create(`<zippy title="Zippy title"></zippy>`);
+  it('should be closed by default', () => {
+    host = createHost(`<zippy title="Zippy title"></zippy>`);
+    
     expect('.zippy__content').not.toBeInDOM();
   });
 
-  it('should toggle the content', function ( this : Context ) {
-    this.create(`<zippy title="Zippy title"></zippy>`);
-    this.trigger('click', '.zippy__title');
+  it('should toggle the content', () => {
+    host = createHost(`<zippy title="Zippy title"></zippy>`);
+    
+    host.trigger('click', '.zippy__title');
     expect('.zippy__content').toBeInDOM();
-    this.trigger('click', '.zippy__title');
+    
+    host.trigger('click', '.zippy__title');
     expect('.zippy__content').not.toBeInDOM();
   });
 
@@ -125,33 +134,41 @@ export class ButtonComponent {
 // button.component.spec.ts
 
 import { ButtonComponent } from './button.component';
-import { EasyTest, easyTest } from 'ngx-easy-test';
+import { EasyTest, makeCreateComponent } from 'ngx-easy-test';
 
 describe('ButtonComponent', () => {
 
-  type Context = EasyTest<ButtonComponent>;
+  let easyTest: EasyTest<ButtonComponent>;
 
-  easyTest(ButtonComponent);
-
-  it('should set the "success" class by default', function ( this : Context ) {
-    expect(this.query('button')).toHaveClass('success');
+  const createComponent = makeCreateComponent<ButtonComponent>(ButtonComponent);
+  
+  beforeEach(() => {
+    easyTest = createComponent();
   });
 
-  it('should set the class name according to the [className]', function ( this : Context ) {
-    this.whenInput({ className: 'danger' });
-    expect(this.query('button')).toHaveClass('danger');
-    expect(this.query('button')).not.toHaveClass('success');
+  it('should set the "success" class by default', () => {
+    expect(easyTest.query('button')).toHaveClass('success');
   });
 
-  it('should set the title according to the [title]', function ( this : Context ) {
-    this.whenInput('title', 'Click');
-    expect(this.query('button')).toContainText('Click');
+  it('should set the class name according to the [className]', () => {
+    easyTest.whenInput({ className: 'danger' });
+    
+    expect(easyTest.query('button')).toHaveClass('danger');
+    expect(easyTest.query('button')).not.toHaveClass('success');
   });
 
-  it('should emit the $event on click', function ( this : Context ) {
+  it('should set the title according to the [title]', () => {
+    easyTest.whenInput('title', 'Click');
+    
+    expect(easyTest.query('button')).toContainText('Click');
+  });
+
+  it('should emit the $event on click', function () => {
     let output;
-    this.whenOutput<{ type: string }>('click', result => output = result);
-    this.trigger('click', 'button', { type: 'click' });
+    easyTest.whenOutput<{ type: string }>('click', result => output = result);
+    
+    easyTest.trigger('click', 'button', { type: 'click' });
+    
     expect(output).toEqual({ type: 'click' });
   });
 
@@ -165,13 +182,14 @@ class CustomHostComponent {
   title = 'Custom HostComponent';
 }
 describe('With Custom Host Component', function () {
-  type Context = EasyTestWithHost<AlertComponent, CustomHostComponent>;
+  let host: EasyTestWithHost<AlertComponent, CustomHostComponent>;
 
-  createHost(AlertComponent, CustomHostComponent);
+  const createHost = makeCreateHostComponent<AlertComponent, CustomHostComponent>(AlertComponent, CustomHostComponent);
 
-  it('should display the host component title', function ( this : Context ) {
-    const fixture = this.create(`<app-alert [title]="title"></app-alert>`);
-    expect(this.query('.alert')).toContainText('Custom HostComponent');
+  it('should display the host component title', () => {
+    const host = createHost(`<app-alert [title]="title"></app-alert>`);
+    
+    expect(host.query('.alert')).toContainText('Custom HostComponent');
   });
 });
 ```
@@ -198,25 +216,26 @@ export class HighlightDirective {
 ```
 
 ```ts
-import { createHost, EasyTestWithHost } from './easy-test';
+import { makeCreateHostComponent, EasyTestWithHost } from './easy-test';
 import { HighlightDirective } from './highlight.directive';
 
 describe('HighlightDirective', function () {
-  type Context = EasyTestWithHost<HighlightDirective>;
+  let host: EasyTestWithHost<HighlightDirective>;
 
-  createHost(HighlightDirective);
+  const createHost = makeCreateHostComponent<HighlightDirective>(HighlightDirective);
 
-  it('should change the background color', function ( this : Context ) {
-    this.create(`<div highlight>Testing HighlightDirective</div>`);
-    this.trigger('mouseover', this.tested);
+  it('should change the background color', () => {
+    host = createHost(`<div highlight>Testing HighlightDirective</div>`);
+    
+    host.trigger('mouseover', host.testedDe);
 
-    expect(this.testedElement).toHaveStyle({
+    expect(host.testedElement).toHaveStyle({
       backgroundColor: '#000000'
     });
 
-    this.trigger('mouseout', this.tested);
+    host.trigger('mouseout', host.testedDe);
 
-    expect(this.testedElement).toHaveStyle({
+    expect(host.testedElement).toHaveStyle({
       backgroundColor: '#ffffff'
     });
   });
@@ -227,37 +246,23 @@ describe('HighlightDirective', function () {
 ## Testing Services
 ```ts
 import { CounterService } from './counter.service';
-import { EasyTestService, testService } from './ngx-easy-test';
+import { EasyTestService, createService } from './ngx-easy-test';
 
 describe('CounterService Without Mock', () => {
-  type Context = EasyTestService<CounterService>;
+  let easyTest: EasyTestService<CounterService>;
 
-  testService<CounterService>(CounterService);
-
-  it('should be 0', function ( this : Context ) {
-    expect(this.service.counter).toEqual(0);
-  });
-});
-
-class MockCounterService {
-  counter = 2
-}
-
-describe('CounterService With Mock', () => {
-  type Context = EasyTestService<MockCounterService>;
-
-  testService<CounterService, MockCounterService>(CounterService, MockCounterService);
-
-  it('should be 2', function ( this : Context ) {
-    expect(this.service.counter).toEqual(2);
+  it('should be 0', () => {
+    easyTest = testService<CounterService>(CounterService);
+    
+    expect(easyTest.service.counter).toEqual(0);
   });
 });
 ```
 
 ## API
- - `easyTest<T>( testedType : Type<T>, moduleMetadata? : TestModuleMetadata )`
- - `createHost<T, H>( testedType : Type<T>, hostType?, moduleMetadata? : TestModuleMetadata )`
- - `testService<S, M = null>( service : Type<S>, mock? : Type<M> )`
+ - `makeCreateComponent<T>( testedType : Type<T>, moduleMetadata? : TestModuleMetadata )`
+ - `makeCreateHostComponent<T, H>( testedType : Type<T>, hostType?, moduleMetadata? : TestModuleMetadata )`
+ - `testService<S>( service : Type<S> )`
 ### Methods
 - `detectChanges()`
   - Run detect changes on the tested element/host
@@ -271,13 +276,10 @@ describe('CounterService With Mock', () => {
   - Listen for an @Output() of the tested component and get the result
 - `trigger<T>( event : string, selector : string, eventObj = null  )`
   - Trigger an event on the selector element
-
-### Properties
-- `tested` - The fixture debug element
-- `testedComponent` - The tested component instance
-- `testedElement` - The host native element. The component is rendered inside the host.
-- `hostComponent` - The host component instance (Available only when using `createHost`)
-- `hostFixture` - The host fixture (Available only when using `createHost`)
+- `dispatchInputEvent(input: HTMLElement, value: string)`
+  - Dispatch input event on input element with custom value and detect changes
+- `advance()`
+  - Wait a tick then detect changes
 
 ## Matchers
 - `toBeChecked()`
