@@ -1,10 +1,14 @@
-import { DebugElement, Type } from '@angular/core';
+import { DebugElement, InjectionToken, Type } from '@angular/core';
 import { ComponentFixture, TestModuleMetadata } from '@angular/core/testing';
 export declare class EasyTest<T> {
     fixture: ComponentFixture<T>;
-    tested: DebugElement;
-    testedComponent: T;
-    testedElement: HTMLElement | any;
+    debugElement: DebugElement;
+    component: T;
+    element: HTMLElement | any;
+    /**
+     * Wrapper for TestBed.get()
+     */
+    get<V>(type: Type<V> | InjectionToken<V>): any;
     /**
      * Run detect changes on the host component
      */
@@ -26,7 +30,7 @@ export declare class EasyTest<T> {
      * @param input
      * @param inputValue
      */
-    whenInput(input: object | string, inputValue?: any): void;
+    whenInput(input: Partial<T> | string, inputValue?: any): void;
     /**
      *
      * @param output
@@ -39,32 +43,50 @@ export declare class EasyTest<T> {
      * @param selector
      * @param eventObj
      */
-    trigger(event: string, selector: string, eventObj?: any): void;
+    trigger(event: string, selector: string | DebugElement, eventObj?: any): void;
+    /**
+     * Dispatch custom DOM event the old fashioned way
+     * @param {HTMLElement} element
+     * @param {string} eventName
+     */
+    dispatchCustomEvent(element: HTMLElement, eventName: string): void;
+    /** Wait a tick then detect changes */
+    advance(): void;
 }
 export declare class EasyTestWithHost<T, H = HostComponent> extends EasyTest<T> {
-    create: (template: string) => any;
     hostComponent: H;
     hostFixture: ComponentFixture<H>;
+    hostElement: HTMLElement;
+    testedDe: DebugElement;
     /**
      * Run detect changes on the host component
      */
     detectChangesHost(): void;
 }
 /**
- *
- * @param testedType
+ * Create factory-function for tested component
+ * @param component - testedType
+ * @param shallow - use NO_ERRORS_SCHEMA
  * @param moduleMetadata
  */
-export declare function easyTest<T>(testedType: Type<T>, moduleMetadata?: TestModuleMetadata): void;
+export declare function makeTestComponentFactory<T>({component, shallow, ...moduleMetadata}: TestModuleMetadata & {
+    component: Type<T>;
+    shallow?: boolean;
+}): (componentParameters?: Partial<T>, detectChanges?: boolean) => EasyTest<T>;
 export declare class HostComponent {
 }
-export declare function createHost<T, H>(testedType: Type<T>, hostType?: Type<H>, moduleMetadata?: TestModuleMetadata): void;
-export declare class EasyTestService<S> {
+export declare function makeHostComponentFactory<T, H = HostComponent>({tested, host, ...moduleMetadata}: TestModuleMetadata & {
+    tested: Type<T>;
+    host?: Type<H>;
+}): (template: string, styles?: any) => EasyTestWithHost<T, H>;
+export interface EasyTestService<S> {
     service: S;
 }
 /**
  *
  * @param service
- * @param mock
+ * @param moduleMetadata
  */
-export declare function testService<S, M = null>(service: Type<S>, mock?: Type<M>): void;
+export declare function createServiceFixture<S>({service, ...moduleMetadata}: TestModuleMetadata & {
+    service: Type<S>;
+}): EasyTestService<S>;

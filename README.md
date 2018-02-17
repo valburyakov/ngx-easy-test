@@ -52,12 +52,12 @@ export class ZippyComponent {
 ```ts
 // zippy.component.spec.ts
 
-import { makeCreateHostComponent, EasyTestWithHost } from 'ngx-easy-test';
+import { makeHostComponentFactory, EasyTestWithHost } from 'ngx-easy-test';
 
 describe('ZippyComponent', () => {
   let host: EasyTestWithHost<ZippyComponent>;
   
-  const createHost = makeCreateHostComponent<ZippyComponent>(ZippyComponent);
+  const createHost = makeHostComponentFactory({tested: ZippyComponent});
 
   it('should display the title', () => {
     host = createHost(`<zippy title="Zippy title"></zippy>`);
@@ -134,37 +134,35 @@ export class ButtonComponent {
 // button.component.spec.ts
 
 import { ButtonComponent } from './button.component';
-import { EasyTest, makeCreateComponent } from 'ngx-easy-test';
+import { EasyTest, makeTestComponentFactory } from 'ngx-easy-test';
 
 describe('ButtonComponent', () => {
 
   let easyTest: EasyTest<ButtonComponent>;
 
-  const createComponent = makeCreateComponent<ButtonComponent>(ButtonComponent);
-  
-  beforeEach(() => {
-    easyTest = createComponent();
-  });
+  const createComponent = makeTestComponentFactory({component: ButtonComponent});
 
   it('should set the "success" class by default', () => {
+    easyTest = createComponent();
     expect(easyTest.query('button')).toHaveClass('success');
   });
 
   it('should set the class name according to the [className]', () => {
-    easyTest.whenInput({ className: 'danger' });
+    easyTest = createComponent({ className: 'danger' });
     
     expect(easyTest.query('button')).toHaveClass('danger');
     expect(easyTest.query('button')).not.toHaveClass('success');
   });
 
   it('should set the title according to the [title]', () => {
-    easyTest.whenInput('title', 'Click');
+    easyTest = createComponent('title', 'Click');
     
     expect(easyTest.query('button')).toContainText('Click');
   });
 
   it('should emit the $event on click', function () => {
     let output;
+    easyTest = createComponent();
     easyTest.whenOutput<{ type: string }>('click', result => output = result);
     
     easyTest.trigger('click', 'button', { type: 'click' });
@@ -184,7 +182,7 @@ class CustomHostComponent {
 describe('With Custom Host Component', function () {
   let host: EasyTestWithHost<AlertComponent, CustomHostComponent>;
 
-  const createHost = makeCreateHostComponent<AlertComponent, CustomHostComponent>(AlertComponent, CustomHostComponent);
+  const createHost = makeHostComponentFactory({tested: AlertComponent, host: CustomHostComponent});
 
   it('should display the host component title', () => {
     const host = createHost(`<app-alert [title]="title"></app-alert>`);
@@ -216,26 +214,26 @@ export class HighlightDirective {
 ```
 
 ```ts
-import { makeCreateHostComponent, EasyTestWithHost } from './easy-test';
+import { makeHostComponentFactory, EasyTestWithHost } from './easy-test';
 import { HighlightDirective } from './highlight.directive';
 
 describe('HighlightDirective', function () {
   let host: EasyTestWithHost<HighlightDirective>;
 
-  const createHost = makeCreateHostComponent<HighlightDirective>(HighlightDirective);
+  const createHost = makeHostComponentFactory<HighlightDirective>(HighlightDirective);
 
   it('should change the background color', () => {
     host = createHost(`<div highlight>Testing HighlightDirective</div>`);
     
     host.trigger('mouseover', host.testedDe);
 
-    expect(host.testedElement).toHaveStyle({
+    expect(host.element).toHaveStyle({
       backgroundColor: '#000000'
     });
 
     host.trigger('mouseout', host.testedDe);
 
-    expect(host.testedElement).toHaveStyle({
+    expect(host.element).toHaveStyle({
       backgroundColor: '#ffffff'
     });
   });
@@ -252,7 +250,7 @@ describe('CounterService Without Mock', () => {
   let easyTest: EasyTestService<CounterService>;
 
   it('should be 0', () => {
-    easyTest = testService<CounterService>(CounterService);
+    easyTest = testService(CounterService);
     
     expect(easyTest.service.counter).toEqual(0);
   });
@@ -260,8 +258,8 @@ describe('CounterService Without Mock', () => {
 ```
 
 ## API
- - `makeCreateComponent<T>( testedType : Type<T>, moduleMetadata? : TestModuleMetadata )`
- - `makeCreateHostComponent<T, H>( testedType : Type<T>, hostType?, moduleMetadata? : TestModuleMetadata )`
+ - `makeTestComponentFactory<T>({ component : Type<T>, shallow?: booleant, ...moduleMetadata? : TestModuleMetadata } )`
+ - `makeHostComponentFactory<T, H>({ tested : Type<T>, host?: Type<H>, moduleMetadata? : TestModuleMetadata } )`
  - `testService<S>( service : Type<S> )`
 ### Methods
 - `detectChanges()`
@@ -276,8 +274,8 @@ describe('CounterService Without Mock', () => {
   - Listen for an @Output() of the tested component and get the result
 - `trigger<T>( event : string, selector : string, eventObj = null  )`
   - Trigger an event on the selector element
-- `dispatchInputEvent(input: HTMLElement, value: string)`
-  - Dispatch input event on input element with custom value and detect changes
+- `dispatchCustomEvent(input: HTMLElement, eventName: string)`
+  - Dispatch custom event on element and detect changes
 - `advance()`
   - Wait a tick then detect changes
 

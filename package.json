@@ -34,10 +34,7 @@
     "typescript": "2.4.2"
   },
   "homepage": "http://github.com/velesin/jasmine-jquery",
-  "author": {
-    "name": "Netanel Basal",
-    "url": "https://netbasal.com"
-  },
+  "authors": ["Netanel Basal", "Valentin Buryakov"],
   "scripts": {
     "test": "echo \"Error: no test specified\"",
     "build": "rm -rf ./lib && tsc",
