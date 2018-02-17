@@ -1,6 +1,6 @@
 {
   "name": "@valburyakov/ngx-easy-test",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "Simplified tests for Angular 4",
   "main": "lib/index.js",
   "types": "./lib/index.d.ts",
@@ -34,7 +34,10 @@
     "typescript": "2.4.2"
   },
   "homepage": "http://github.com/velesin/jasmine-jquery",
-  "authors": ["Netanel Basal", "Valentin Buryakov"],
+  "authors": [
+    "Netanel Basal",
+    "Valentin Buryakov"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\"",
     "build": "rm -rf ./lib && tsc",
