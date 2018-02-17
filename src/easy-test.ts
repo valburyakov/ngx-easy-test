@@ -3,6 +3,7 @@ import { async, ComponentFixture, TestBed, TestModuleMetadata, tick } from '@ang
 import { By } from '@angular/platform-browser';
 import { customMatchers } from './easy-test.matchers';
 import { newEvent } from './utils';
+import { mockProvider } from './mock';
 
 // T = Tested component
 export class EasyTest<T> {
@@ -227,12 +228,15 @@ export interface EasyTestService<S> {
 /**
  *
  * @param service
+ * @param mocks
  * @param moduleMetadata
  */
 export function createServiceFixture<S>(
-    { service, ...moduleMetadata } : TestModuleMetadata & {service: Type<S> } ): EasyTestService<S> {
+    { service, mocks, ...moduleMetadata } : TestModuleMetadata & {service: Type<S>, mocks?: Type<any>[]  } ): EasyTestService<S> {
 
   const providers : Provider[] = [ {provide: service, useClass: service} ];
+
+  mocks.forEach(type => providers.push(mockProvider(type)));
 
   if ( moduleMetadata && moduleMetadata.providers ) {
     providers.push(...moduleMetadata.providers);

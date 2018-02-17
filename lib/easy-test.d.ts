@@ -85,8 +85,10 @@ export interface EasyTestService<S> {
 /**
  *
  * @param service
+ * @param mocks
  * @param moduleMetadata
  */
-export declare function createServiceFixture<S>({service, ...moduleMetadata}: TestModuleMetadata & {
+export declare function createServiceFixture<S>({service, mocks, ...moduleMetadata}: TestModuleMetadata & {
     service: Type<S>;
+    mocks?: Type<any>[];
 }): EasyTestService<S>;

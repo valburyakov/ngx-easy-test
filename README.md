@@ -17,9 +17,9 @@ Although Angular provides us with great tools to deal with these things, it stil
 For this reason, I decided to create a library that will make it easier for us to write tests by cutting the boilerplate and add custom Jasmine matchers. 
 
 ## Installation
-Using npm by running ```npm install ngx-easy-test --save-dev```
+Using npm by running ```npm install @valburyakov/ngx-easy-test --save-dev```
 
-Using yarn by running ```yarn add ngx-easy-test --dev```
+Using yarn by running ```yarn add @valburyakov/ngx-easy-test --dev```
 
 
 ## Example
@@ -155,7 +155,7 @@ describe('ButtonComponent', () => {
   });
 
   it('should set the title according to the [title]', () => {
-    easyTest = createComponent('title', 'Click');
+    easyTest = createComponent({'title': 'Click'});
     
     expect(easyTest.query('button')).toContainText('Click');
   });
@@ -244,24 +244,65 @@ describe('HighlightDirective', function () {
 ## Testing Services
 ```ts
 import { CounterService } from './counter.service';
-import { EasyTestService, createService } from './ngx-easy-test';
+import { EasyTestService, createServiceFixture } from './ngx-easy-test';
 
 describe('CounterService Without Mock', () => {
-  let easyTest: EasyTestService<CounterService>;
+  const easyTest = createServiceFixture({service: CounterService});
 
   it('should be 0', () => {
-    easyTest = testService(CounterService);
-    
     expect(easyTest.service.counter).toEqual(0);
   });
 });
 ```
 
+## Testing Services With Mocks
+```ts
+import { CounterService } from './counter.service';
+import { EasyTestService, createServiceFixture } from './ngx-easy-test';
+
+describe('CounterService Without Mock', () => {
+  const easyTest = createServiceFixture({service: CounterService, mocks: [OtherService]});
+
+  it('should be 0', () => {
+    expect(easyTest.service.counter).toEqual(0);
+  });
+});
+```
+
+## Typed Mocks
+```ts
+import { SpyObject, mockProvider } from './ngx-easy-test';
+
+ let otherService: SpyObject<OtherService>;
+ let service: TestedService;
+ 
+ beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        TestedService,
+        mockProvider(OtherService)
+      ],
+    });
+
+    otherService = TestBed.get(OtherService);
+    service = TestBed.get(GoogleBooksService);
+  });
+  
+  it('should be 0', () => {
+    otherService.method.andReturn('mocked value'); // mock is strongly typed
+  
+   // then test serivce 
+  });
+
+```
+
 ## API
  - `makeTestComponentFactory<T>({ component : Type<T>, shallow?: booleant, ...moduleMetadata? : TestModuleMetadata } )`
  - `makeHostComponentFactory<T, H>({ tested : Type<T>, host?: Type<H>, moduleMetadata? : TestModuleMetadata } )`
- - `testService<S>( service : Type<S> )`
-### Methods
+ - `createServiceFixture<S>({ service : Type<S>, mocks: Type[], ...moduleMetadata? : TestModuleMetadata })`
+ - `mockProvider<T>(type: Type<T>): Provider`
+ 
+## Methods
 - `detectChanges()`
   - Run detect changes on the tested element/host
 - `query(selector: string)`
